@@ -28,7 +28,7 @@ async function connectLine(interactive){
  await lineInit;
  if(!liff.isLoggedIn()){
   if(auth.currentUser)await authSdk.signOut(auth);
-  if(interactive)liff.login({redirectUri:'https://youbing-46daa.web.app/'});
+  if(interactive)liff.login({redirectUri:'https://youbing3.github.io/order/'});
   return false;
  }
  const idToken=liff.getIDToken();
