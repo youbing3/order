@@ -16,7 +16,7 @@ header{background:#fff;border-bottom:1px solid var(--edge);min-height:72px;paddi
 <fieldset id="shipping" hidden disabled><label for="receiver">收件姓名</label><input id="receiver" name="receiver" maxlength="50" required><label for="address">宅配地址</label><input id="address" name="address" maxlength="180" required></fieldset>
 <label for="note">訂單備註（選填）</label><textarea id="note" name="note" maxlength="250" rows="2"></textarea>
 <div class="total" id="quote" aria-live="polite"></div><button class="wide" id="sendOrder" disabled>送出訂單</button><output id="receipt" aria-live="polite"></output></form></section>
-<section id="member" class="card" hidden><span class="eyebrow">MEMBER CENTER</span><h2>會員資料</h2><p id="memberProfile" hidden></p><article class="memberPane"><h2>加入會員</h2><p class="muted">先綁定 LINE，再填寫姓名與台灣手機號碼。</p><p><button type="button" id="bindLine" style="background:#087e43">使用 LINE 登入</button></p><p id="lineStatus" aria-live="polite">尚未綁定 LINE</p><form id="register"><label>姓名<input name="buyer" maxlength="50" required></label><label>手機號碼<input name="phone" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="09xxxxxxxx" required pattern="09[0-9]{8}" maxlength="10"></label><p><button id="joinMember" disabled>完成會員登記</button></p><output id="registered" aria-live="polite"></output></form></article></section><section id="historyPage" class="card" hidden><span class="eyebrow">ORDER HISTORY</span><h2>歷史訂單</h2><article class="memberPane"><p id="historyHint" class="muted" aria-live="polite">綁定 LINE 並完成會員登記後，即可查看自己的訂購紀錄。</p><div id="history"></div><details id="guestLookup"><summary>訪客訂單查詢</summary><form id="lookup"><label>訂單編號<input name="id" required></label><label>訂購電話<input name="phone" type="tel" required pattern="[0-9]{8,10}"></label><p><button>查詢</button></p><output id="found"></output></form></details></article></section>
+<section id="member" class="card" hidden><span class="eyebrow">MEMBER CENTER</span><h2>會員資料</h2><p id="memberProfile" hidden></p><p id="notificationStatus" aria-live="polite" hidden></p><p><button id="verifyNotification" type="button" hidden>重新驗證 LINE 通知</button></p><article class="memberPane"><h2>加入會員</h2><p class="muted">先綁定 LINE，再填寫姓名與台灣手機號碼。</p><p><button type="button" id="bindLine" style="background:#087e43">使用 LINE 登入</button></p><p id="lineStatus" aria-live="polite">尚未綁定 LINE</p><form id="register"><label>姓名<input name="buyer" maxlength="50" required></label><label>手機號碼<input name="phone" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="09xxxxxxxx" required pattern="09[0-9]{8}" maxlength="10"></label><p><button id="joinMember" disabled>完成會員登記</button></p><output id="registered" aria-live="polite"></output></form></article></section><section id="historyPage" class="card" hidden><span class="eyebrow">ORDER HISTORY</span><h2>歷史訂單</h2><article class="memberPane"><p id="historyHint" class="muted" aria-live="polite">綁定 LINE 並完成會員登記後，即可查看自己的訂購紀錄。</p><div id="history"></div><details id="guestLookup"><summary>訪客訂單查詢</summary><form id="lookup"><label>訂單編號<input name="id" required></label><label>訂購電話<input name="phone" type="tel" required pattern="[0-9]{8,10}"></label><p><button>查詢</button></p><output id="found"></output></form></details></article></section>
 </main>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script><script src="config.js"></script><script src="remote.js"></script><script>
 const get=id=>document.getElementById(id);
@@ -31,6 +31,9 @@ function fillBuyer(){if(member){get('buyer').value=member.name;get('phone').valu
 async function refreshHistory(){
  const result=await api('history');
  member=result.member;
+ get('notificationStatus').hidden=!member;
+ get('notificationStatus').textContent=result.lineNotifications?'LINE 通知收件人已設定。':'尚未設定 LINE 通知收件人。';
+ get('verifyNotification').hidden=!member||result.lineNotifications;
  get('welcome').textContent=member?'你好，'+member.name:'歡迎來到蔥酥小餅';
  get('memberProfile').hidden=!member;
  get('memberProfile').textContent=member?member.name+'｜'+member.phone:'';
@@ -71,6 +74,18 @@ async function startLine(interactive){
  fillBuyer();
  get('joinMember').disabled=!product?.accepting;
 }
+get('verifyNotification').onclick=async()=>{
+ const button=get('verifyNotification');
+ button.disabled=true;
+ try{
+  await startLine(true);
+ }catch(error){
+  showError(error);
+  if(error.code==='functions/unauthenticated'){
+   get('notificationStatus').textContent='驗證未完成。請關閉此頁，從官方帳號聊天室重新開啟會員專區。';
+  }
+ }finally{button.disabled=false;}
+};
 get('bindLine').onclick=()=>startLine(true).catch(showError);
 let catalog=[];
 function renderProducts(){
