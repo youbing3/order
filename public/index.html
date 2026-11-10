@@ -78,12 +78,16 @@ get('verifyNotification').onclick=async()=>{
  const button=get('verifyNotification');
  button.disabled=true;
  try{
-  await startLine(true);
+  lineInit??=window.liff.init({liffId:websiteConfig.liffId});
+  await lineInit;
+  if(liff.isInClient()){
+   await startLine(true);
+   return;
+  }
+  if(liff.isLoggedIn())liff.logout();
+  liff.login({redirectUri:new URL('/#line-notification',location.origin).href});
  }catch(error){
   showError(error);
-  if(error.code==='functions/unauthenticated'){
-   get('notificationStatus').textContent='驗證未完成。請關閉此頁，從官方帳號聊天室重新開啟會員專區。';
-  }
  }finally{button.disabled=false;}
 };
 get('bindLine').onclick=()=>startLine(true).catch(showError);
@@ -224,6 +228,7 @@ get('export').onclick=()=>{
 };
 reload().catch(showError);}
 else startLine(false).catch(showError).then(()=>{
+ if(location.hash==='#line-notification')document.querySelector('[data-page="member"]')?.click();
  if(location.hash==='#history')document.querySelector('[data-page="historyPage"]')?.click();
  return loadProduct();
 }).catch(showError);
