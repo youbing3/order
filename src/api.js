@@ -63,7 +63,7 @@ async function storeApi(request){
   const ref=sessions.doc(id);
   await db.runTransaction(async tx=>{
    const entry=(await tx.get(ref)).data();
-   if(!entry||entry.uid!==request.auth.uid||entry.revoked||now-entry.lastSeen>180000)fail('登入已結束，請重新登入。','unauthenticated');
+   if(!entry||entry.uid!==request.auth.uid||entry.revoked)fail('登入已結束，請重新登入。','unauthenticated');
    if(now-entry.lastSeen>15000)tx.update(ref,{lastSeen:now});
   });
   if(path==='admin/session/ping')return {ok:true};
@@ -95,7 +95,7 @@ async function storeApi(request){
  case 'admin/catalog':return rows(await db.collection('products').get());
  case 'admin':{
   const [o,m]=await Promise.all([db.collection('orders').orderBy('date','desc').get(),db.collection('members').get()]);
-  return {orders:rows(o),members:rows(m).map(({name,phone,date})=>({name,phone,date,lineId:true}))};
+  return {orders:rows(o).filter(order=>!order.deletedAt),members:rows(m).map(({name,phone,date})=>({name,phone,date,lineId:true}))};
  }
  case 'admin/store':{
   if(!request.data.body)return settings(await config.get());
@@ -113,11 +113,30 @@ async function storeApi(request){
   const p={id,name,price,image,active:d.active==='on'};
   await product(id).set(p);return p;
  }
+ case 'admin/edit':
+ case 'admin/delete':
  case 'admin/update':{
   if(!/^SC-[A-F0-9]{24}$/.test(d.id))fail('訂單編號有誤。');
   return db.runTransaction(async tx=>{
    const ref=order(d.id),o=(await tx.get(ref)).data();
-   if(!o)fail('查無訂單。','not-found');
+   if(!o||o.deletedAt)fail('查無訂單。','not-found');
+   if(path==='admin/delete'){
+    if(o.paid)fail('已收款的訂單請先確認退款，再取消收款標記。','failed-precondition');
+    tx.update(ref,{deletedAt:date(),deletedBy:request.auth.uid});
+    return {ok:true};
+   }
+   if(path==='admin/edit'){
+    if(o.paid||!['待確認','已確認'].includes(o.status))fail('只可編輯尚未收款且未完成的訂單。','failed-precondition');
+    if((o.updatedAt||'')!==d.updatedAt)fail('訂單已更新，請重新整理後再編輯。','failed-precondition');
+    const buyer=text(d.buyer,50),phone=text(d.phone,10),productName=text(d.productName,60),qty=Number(d.qty),unitPrice=Number(d.unitPrice),freight=Number(d.freight);
+    const receiver=text(d.receiver,50),address=text(d.address,180),gift=text(d.gift,60);
+    if(!buyer||!/^\d{8,10}$/.test(phone)||!productName||!integer(qty,1,999)||d.unitPrice===''||!integer(unitPrice,0,100000)||d.freight===''||!integer(freight,0,100000))fail('請確認訂單欄位與金額。');
+    if(o.delivery==='ship'&&(!receiver||!address))fail('請填寫收件人和宅配地址。');
+    const subtotal=qty*unitPrice,shipping=o.delivery==='ship'?freight:0;
+    tx.update(ref,{buyer,phone,productName,qty,unitPrice,subtotal,freight:shipping,total:subtotal+shipping,receiver,address,gift,note:text(d.note,250),updatedAt:date()});
+    return {ok:true};
+   }
+
    if(typeof d.paid==='boolean'&&o.status!=='已取消')tx.update(ref,{paid:d.paid});
    else{
     const next=o.status==='待確認'?['已確認','已取消']:o.status==='已確認'?[o.delivery==='ship'?'已出貨':'已取貨']:[];
@@ -133,7 +152,7 @@ async function storeApi(request){
   if(!m)return {member:null,orders:[]};
   const o=rows(await db.collection('orders').where('memberUid','==',uid).get());
   o.sort((a,b)=>b.date.localeCompare(a.date));
-  return {member:{name:m.name,phone:m.phone},orders:o.map(orderSummary)};
+  return {member:{name:m.name,phone:m.phone},orders:o.filter(order=>!order.deletedAt).map(orderSummary)};
  }
  case 'member':{
   if(!uid)fail('請先用 LINE 登入。','unauthenticated');
@@ -150,7 +169,7 @@ async function storeApi(request){
   const id=text(d.id,40).toUpperCase(),phone=text(d.phone,10);
   if(!/^SC-[A-F0-9]{24}$/.test(id)||!/^\d{8,10}$/.test(phone))return {order:null};
   const o=(await order(id).get()).data();
-  return {order:o?.phone===phone?orderSummary(o):null};
+  return {order:o?.phone===phone&&!o.deletedAt?orderSummary(o):null};
  }
  case 'order':{
   const buyer=text(d.buyer,50),phone=text(d.phone,10),qty=Number(d.qty),delivery=d.delivery;
@@ -162,6 +181,7 @@ async function storeApi(request){
   return db.runTransaction(async tx=>{
    const ref=order(id),existing=(await tx.get(ref)).data();
    if(existing){
+    if(existing.deletedAt)fail("這筆訂單已移除，請重新開啟訂購頁。","failed-precondition");
     if(existing.phone!==phone||existing.memberUid!==uid)fail('請重新開啟訂購頁。','permission-denied');
     return orderSummary(existing);
    }
