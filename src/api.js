@@ -231,6 +231,7 @@ async function storeApi(request){
   return {order:o?.phone===phone&&!o.deletedAt?orderSummary(o):null};
  }
  case 'order':{
+  if(!uid)fail('請先使用 LINE 登入並完成會員登記。','unauthenticated');
   const buyer=text(d.buyer,50),phone=text(d.phone,10),qty=Number(d.qty),delivery=d.delivery;
   const receiver=text(d.receiver,50),address=text(d.address,180);
   if(!buyer||!/^\d{8,10}$/.test(phone)||!integer(qty,1,999)||!['ship','pickup'].includes(delivery)||!(/^[a-f0-9-]{36}$/.test(d.productId)))fail('請確認商品、張數、姓名與電話。');
@@ -244,7 +245,8 @@ async function storeApi(request){
     if(existing.phone!==phone||existing.memberUid!==uid)fail('請重新開啟訂購頁。','permission-denied');
     return orderSummary(existing);
    }
-   const [s,p]=await Promise.all([tx.get(config),tx.get(product(d.productId))]);
+   const [s,p,profile]=await Promise.all([tx.get(config),tx.get(product(d.productId)),tx.get(member(uid))]);
+   if(!profile.exists)fail('請先完成會員登記再下單。','failed-precondition');
    const store=settings(s),item=p.data(),promotion=promo(store);
    if(!store.accepting)fail('目前暫停接單。','unavailable');
    const subtotal=qty*(item?.price??0);
