@@ -245,7 +245,12 @@ function initProducts(){
    const canvas=document.createElement('canvas');
    canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));
    canvas.getContext('2d').drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close();
-   image=canvas.toDataURL('image/webp',0.82);preview.src=image;preview.hidden=false;
+   let encoded=canvas.toDataURL('image/webp',0.82);
+   if(!encoded.startsWith('data:image/webp;')||encoded.length>700000){
+    encoded=canvas.toDataURL('image/jpeg',0.82);
+   }
+   if(encoded.length>700000)throw new Error('壓縮後的商品圖片仍太大，請縮小圖片再試。');
+   image=encoded;preview.src=image;preview.hidden=false;
   }catch(error){form.elements.image.value='';showError(error);}
  };
  async function listCatalog(){
