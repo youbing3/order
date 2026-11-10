@@ -36,3 +36,7 @@ npx wrangler secret put FIREBASE_SERVICE_ACCOUNT < "C:\path\firebase-service-acc
 - 若 Worker 回報伺服器錯誤，可在專案資料夾執行 npx wrangler tail，重新操作一次，查對應錯誤。請勿分享金鑰或登入權杖。
 
 此版本以 Workers Free 與 Firestore 免費額度為目標。未部署至你的帳號，正式端到端流程需實際部署後驗證。
+
+## 更新版面與訂單管理
+
+把本包的 public/index.html、public/admin/index.html、public/mascot.png 和 src/api.js 同一批提交到目前連接 Cloudflare 的 GitHub repo，等待 Worker 正式部署。可用測試單確認編輯、分類與移除，以及後台頁籤切換。移除採保留原始資料的方式，從一般清單、會員歷史和統計排除。已收款訂單須先確認退款並取消收款標記，才可移除。
