@@ -208,5 +208,8 @@ get('export').onclick=()=>{
  const a=document.createElement('a');a.href=url;a.download='scallion-orders.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 };
 reload().catch(showError);}
-else startLine(false).catch(showError).then(loadProduct).catch(showError);
+else startLine(false).catch(showError).then(()=>{
+ if(location.hash==='#history')document.querySelector('[data-page="historyPage"]')?.click();
+ return loadProduct();
+}).catch(showError);
 </script></html>
