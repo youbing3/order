@@ -27,6 +27,7 @@ const stages=['待確認','已接單','待自取／出貨','已完成','已取�
 const money=value=>'NT$'+value.toLocaleString('zh-TW');
 const shippingNote=o=>o.delivery==='ship'?'冷凍宅配｜運費 '+money(o.freight??0):'自取｜地點與時間待店家確認';
 let product, member, lineId='', requestId=crypto.randomUUID();
+let checkoutPending=false;
 function fillBuyer(){if(member){get('buyer').value=member.name;get('phone').value=member.phone;}}
 async function refreshHistory(){
  const result=await api('history');
@@ -150,7 +151,7 @@ function freightFor(subtotal,ship){
 }
 function quote(){
  const qty=Number(get('qty').value);
- get('sendOrder').disabled=!product?.accepting||qty<1;
+ get('sendOrder').disabled=checkoutPending||!product?.accepting||qty<1;
  const ship=get('delivery').value==='ship';
  get('shipping').hidden=get('shipping').disabled=!ship;
  if(!product)return;
@@ -178,23 +179,38 @@ function submit(id,action){
  if(!form)return;
  form.onsubmit=async event=>{
   event.preventDefault();
+  if(id==='checkout'&&checkoutPending)return;
   const button=form.querySelector('button:not([type="button"])');
+  if(id==='checkout')checkoutPending=true;
   button.disabled=true;get('notice').hidden=true;
   try{await action(Object.fromEntries(new FormData(form)));}
   catch(error){showError(error);}
-  finally{button.disabled=(id==='checkout'||id==='register')&&!product?.accepting||id==='register'&&!lineId||id==='checkout'&&Number(get('qty').value)<1;}
+  finally{
+   if(id==='checkout')checkoutPending=false;
+   button.disabled=(id==='checkout'||id==='register')&&!product?.accepting||id==='register'&&!lineId||id==='checkout'&&Number(get('qty').value)<1;}
  };
 }
 submit('checkout',async data=>{
  if(!member){document.querySelector('[data-page="member"]')?.click();return;}
  if(!product?.accepting||!product.id||Number(data.qty)<1)return;
+ const subtotal=Number(data.qty)*product.price;
+ const freight=freightFor(subtotal,data.delivery==='ship');
+ const deliveryLabel=data.delivery==='ship'?'冷凍宅配':'自取';
+ const confirmation=[
+  '確認送出訂單？',
+  product.name+' × '+data.qty+' 張',
+  '取貨方式　'+deliveryLabel,
+  '總金額　'+money(subtotal+freight)
+ ].join('\n');
+ if(!window.confirm(confirmation))return;
  let order;
- try{order=await api('order',{...data,requestId,freight:freightFor(Number(data.qty)*product.price,data.delivery==='ship'),productId:product.id,productName:product.name,unitPrice:product.price,promotion:JSON.stringify(product.promotion)});}
+ try{order=await api('order',{...data,requestId,freight,productId:product.id,productName:product.name,unitPrice:product.price,promotion:JSON.stringify(product.promotion)});}
  catch(error){if(error.status===409||error.status===503)await loadProduct();throw error;}
  requestId=crypto.randomUUID();
- get('checkout').reset();fillBuyer();renderProducts();quote();
+ get('checkout').reset();
+ get('qty').value='0';
+ fillBuyer();renderProducts();quote();
  get('receipt').textContent='訂單已送出。'+summary(order);
- await refreshHistory();
 });
 submit('register',async data=>{
  const result=await api('member',data);
