@@ -160,8 +160,9 @@ function render(){
    button.textContent=label;
    button.onclick=async()=>{
     if(change.status==='已取消'&&!window.confirm('確定取消這筆訂單？'))return;
+    if(change.notify&&!window.confirm(o.lineNoticeKey?'要補發這筆 LINE 通知嗎？':'舊版訂單沒有發送紀錄。請確認客人未收到，再補發。'))return;
     for(const item of actions.children)item.disabled=true;
-    try{const result=await api('admin/update',{id:o.id,...change});if(result.notification)window.alert('訂單已確認。'+result.notification);await reload();}
+    try{const result=await api(change.notify?'admin/notify':'admin/update',{id:o.id,...change});if(result.notification)window.alert('訂單已確認。'+result.notification);await reload();}
     catch(error){showError(error);}
     finally{for(const item of actions.children)item.disabled=false;}
    };
@@ -171,6 +172,7 @@ function render(){
    if(o.status==='待確認'){action('確認訂單',{status:'已確認'});action('取消訂單',{status:'已取消'});}
    if(o.status==='已確認')action(o.delivery==='ship'?'標記已出貨':'標記已取貨',{status:o.delivery==='ship'?'已出貨':'已取貨'});
   }
+  if(o.memberUid&&!o.lineNoticeAccepted&&['已確認','已出貨','已取貨'].includes(o.status))action('補發 LINE 通知',{notify:true});
   if(o.status!=='已取消')action(o.paid?'取消收款標記':'標記已收款',{paid:!o.paid});
   function extra(label,handler){
    const button=document.createElement('button');button.textContent=label;button.onclick=handler;actions.append(button);
