@@ -5,9 +5,9 @@
 
 .console{display:grid;grid-template-columns:228px minmax(0,1fr);min-height:100vh}.rail{background:#fff;border-right:1px solid var(--edge);padding:22px 14px;display:flex;flex-direction:column;gap:24px}.brand{display:flex;align-items:center;gap:9px;padding:0 6px}.brandmark{display:grid;place-items:center;width:38px;height:38px;border-radius:11px;background:#e7f6ee;color:#17634b;font-size:21px;font-weight:800}.brand strong,.brand small{display:block}.brand small{font-size:10px;letter-spacing:.1em}.rail nav{display:grid;gap:4px}.rail nav a{display:flex;align-items:center;gap:9px;text-decoration:none;color:#45566a;font-weight:680;padding:10px;border-radius:9px}.rail nav a .navIcon{display:grid;place-items:center;width:22px;height:22px;color:#5b6c7e}.rail nav a svg{width:17px;height:17px}.rail nav a[aria-current=page]{background:#e9f6ef;color:#185b46}.rail nav a[aria-current=page] .navIcon{color:#185b46}.rail nav a:hover{background:#eff5f5}.railFooter{margin-top:auto;padding:10px}.workspace{min-width:0;padding:0 clamp(18px,4vw,54px) 42px}.topline{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:66px;border-bottom:1px solid var(--edge);margin-bottom:23px;color:#56687b;font-size:13px}.mode{color:#40546b;background:white;border:1px solid var(--edge);border-radius:999px;padding:5px 9px;font-weight:650}#admin.card{padding:0;border:0;background:transparent;box-shadow:none}#heading{font-size:clamp(27px,4vw,42px);margin-bottom:7px}#description{max-width:680px;margin-bottom:20px}.overview,.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:10px;margin:15px 0 22px}.overview{grid-template-columns:repeat(3,minmax(0,1fr))}.overview div,.stats div{background:#fff;border:1px solid var(--edge);border-radius:15px;padding:13px 15px;color:#56687b;font-size:13px}.overview strong,.stats strong{display:block;margin-top:3px;font-size:25px;color:#182c38;font-variant-numeric:tabular-nums}.overview div:first-child{border-color:#f0ddb5;background:#fff9ed}#orders{display:grid;gap:8px}.order{padding:13px 15px}.actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.actions button{min-height:35px;font-size:13px;padding:6px 10px}.actions button+button,#newProduct{background:#eef3f7;color:#354c63}.actions button+button:hover,#newProduct:hover{background:#e0e9f1}#criteria,#storeForm,#productForm{border:1px solid var(--edge);background:white;border-radius:15px;padding:15px;margin:12px 0}#catalog p,#members p{display:flex;gap:8px;align-items:center;flex-wrap:wrap;border:1px solid var(--edge);border-radius:12px;padding:11px 13px;background:white}#catalog img{width:44px;height:44px;border-radius:8px;object-fit:cover}#imagePreview{margin-top:8px}
 @media(max-width:760px){.console{display:block}.rail{padding:11px 12px;gap:8px;border-right:0;border-bottom:1px solid var(--edge)}.rail nav{display:flex;flex-wrap:nowrap;overflow:auto}.rail nav a{padding:7px 8px;font-size:12px;white-space:nowrap}.rail nav a .navIcon{width:15px}.rail nav a svg{width:14px;height:14px}.railFooter{display:none}.workspace{padding:0 12px 33px}.topline{min-height:48px;margin-bottom:16px}.overview{gap:5px}.overview div{padding:8px;font-size:11px}.overview strong{font-size:20px}}
-</style>
-<section id="loginGate" class="card" style="max-width:420px;margin:10vh auto;padding:24px"><h2>店家管理登入</h2><form id="adminCredentials"><label>Email<input name="email" type="email" autocomplete="username" required></label><label>密碼<input name="password" type="password" autocomplete="current-password" required></label><button id="loginAdmin" type="submit" style="margin-top:14px">登入</button><output id="loginError" aria-live="polite"></output></form></section><main id="adminConsole" class="console" hidden><aside class="rail"><div class="brand"><span class="brandmark">蔥</span><div><strong>蔥酥小餅</strong><small>STORE CONSOLE</small></div></div><nav aria-label="管理功能"><a href="#orders"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14v16H5z M8 8h8 M8 12h8 M8 16h5"/></svg></span>訂單頁面</a><a href="#search"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 10a6 6 0 1 1-12 0 6 6 0 0 1 12 0z M15 15l5 5"/></svg></span>查詢訂單</a><a href="#members"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a4 4 0 1 1-8 0 4 4 0 0 1 8 0z M5 21v-2a7 5 0 0 1 14 0v2"/></svg></span>會員資料</a><a href="#revenue"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16 M7 15v-3 M12 15V8 M17 15V5"/></svg></span>收入統計</a><a href="#sessions">登入裝置</a><a href="#products"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7l8-4 8 4v10l-8 4-8-4z M4 7l8 4 8-4 M12 11v10"/></svg></span>商品設定</a></nav><small class="railFooter">店家管理工作區</small></aside><div class="workspace"><div class="topline"><span>店家後台 / 管理工作區</span><div><button id="logoutAdmin" hidden>登出</button></div></div><div id="notice" class="banner" hidden role="alert"></div><section id="admin" class="card"><span class="eyebrow">STORE MANAGEMENT</span><h2 id="heading"></h2><p id="description" class="muted"></p><div id="sessions" hidden></div><div id="overview" class="overview" hidden></div><div id="stats" class="stats"></div><div id="criteria"><label>搜尋姓名、電話、單號<input id="search"></label><label>訂單狀態<select id="filter"><option value="">全部</option></select></label><p><button id="export">匯出訂單 CSV</button></p></div><div id="orders"></div><div id="members"></div><div id="catalog" hidden></div><form id="productForm" hidden><h3 id="editorTitle">新增商品</h3><input name="id" type="hidden"><label>商品圖片（JPG、PNG、WebP）<input name="image" type="file" accept="image/jpeg,image/png,image/webp"></label><img id="imagePreview" alt="商品預覽" hidden style="width:120px;border-radius:8px"><label>商品名稱<input name="name" required maxlength="60"></label><label>單價（NT$／張）<input name="price" type="number" min="1" max="100000" required></label><label><input name="active" type="checkbox" checked> 商品上架</label><p><button id="saveProduct">儲存商品</button> <button id="newProduct" type="button">新增另一項</button></p><output id="productSaved" aria-live="polite"></output></form><form id="storeForm" hidden><hr><h2>宅配與免運</h2><label>宅配運費（NT$）<input name="shippingFee" type="number" min="0" max="100000" required></label><label>免運門檻（NT$，留空代表無門檻優惠）<input name="freeShipping" type="number" min="1" max="99999999"></label><hr><h2>接單與期間活動</h2><label><input name="accepting" type="checkbox"> 開放下單與會員登記</label><label><input name="enabled" type="checkbox"> 啟用滿額贈活動</label><label>贈品名稱<input name="gift" maxlength="60" required></label><label>滿額門檻（NT$）<input name="threshold" type="number" min="1" max="99999999" required></label><label>開始日期（台灣時間）<input name="start" type="date"></label><label>結束日期（含當天）<input name="end" type="date"></label><p><button id="saveStore" disabled>儲存接單與活動設定</button></p><output id="storeSaved" aria-live="polite"></output></form></section></div></main>
-<script src="../config.js"></script><script src="../remote.js"></script><script>
+.orderAmount{display:block;font-size:25px;color:#17634b;margin-top:5px}.order small{font-size:11px}.actions button[aria-pressed=true]{background:#17634b;color:white}#orderEditor{width:min(440px,92vw);max-height:88vh;border:1px solid #d9e2ea;border-radius:16px;padding:20px}#orderEditor::backdrop{background:#14202b66}</style>
+<section id="loginGate" hidden class="card" style="max-width:420px;margin:10vh auto;padding:24px"><h2>店家管理登入</h2><form id="adminCredentials"><label>Email<input name="email" type="email" autocomplete="username" required></label><label>密碼<input name="password" type="password" autocomplete="current-password" required></label><button id="loginAdmin" type="submit" style="margin-top:14px">登入</button><output id="loginError" aria-live="polite"></output></form></section><main id="adminConsole" class="console" hidden><aside class="rail"><div class="brand"><span class="brandmark">蔥</span><div><strong>蔥酥小餅</strong><small>STORE CONSOLE</small></div></div><nav aria-label="管理功能"><a href="#orders"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14v16H5z M8 8h8 M8 12h8 M8 16h5"/></svg></span>訂單頁面</a><a href="#search"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 10a6 6 0 1 1-12 0 6 6 0 0 1 12 0z M15 15l5 5"/></svg></span>查詢訂單</a><a href="#members"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a4 4 0 1 1-8 0 4 4 0 0 1 8 0z M5 21v-2a7 5 0 0 1 14 0v2"/></svg></span>會員資料</a><a href="#revenue"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16 M7 15v-3 M12 15V8 M17 15V5"/></svg></span>收入統計</a><a href="#sessions">登入裝置</a><a href="#products"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7l8-4 8 4v10l-8 4-8-4z M4 7l8 4 8-4 M12 11v10"/></svg></span>商品設定</a></nav><small class="railFooter">店家管理工作區</small></aside><div class="workspace"><div class="topline"><span>店家後台 / 管理工作區</span><div><button id="logoutAdmin" hidden>登出</button></div></div><div id="notice" class="banner" hidden role="alert"></div><section id="admin" class="card"><span class="eyebrow">STORE MANAGEMENT</span><h2 id="heading"></h2><p id="description" class="muted"></p><div id="sessions" hidden></div><div id="overview" class="overview" hidden></div><div id="stats" class="stats"></div><div id="criteria"><label>搜尋姓名、電話、單號<input id="search"></label><label>訂單狀態<select id="filter"><option value="">全部</option></select></label><p><button id="export">匯出訂單 CSV</button></p></div><div id="orderGroups" class="actions" hidden></div><div id="orders"></div><div id="members"></div><div id="catalog" hidden></div><form id="productForm" hidden><h3 id="editorTitle">新增商品</h3><input name="id" type="hidden"><label>商品圖片（JPG、PNG、WebP）<input name="image" type="file" accept="image/jpeg,image/png,image/webp"></label><img id="imagePreview" alt="商品預覽" hidden style="width:120px;border-radius:8px"><label>商品名稱<input name="name" required maxlength="60"></label><label>單價（NT$／張）<input name="price" type="number" min="1" max="100000" required></label><label><input name="active" type="checkbox" checked> 商品上架</label><p><button id="saveProduct">儲存商品</button> <button id="newProduct" type="button">新增另一項</button></p><output id="productSaved" aria-live="polite"></output></form><form id="storeForm" hidden><hr><h2>宅配與免運</h2><label>宅配運費（NT$）<input name="shippingFee" type="number" min="0" max="100000" required></label><label>免運門檻（NT$，留空代表無門檻優惠）<input name="freeShipping" type="number" min="1" max="99999999"></label><hr><h2>接單與期間活動</h2><label><input name="accepting" type="checkbox"> 開放下單與會員登記</label><label><input name="enabled" type="checkbox"> 啟用滿額贈活動</label><label>贈品名稱<input name="gift" maxlength="60" required></label><label>滿額門檻（NT$）<input name="threshold" type="number" min="1" max="99999999" required></label><label>開始日期（台灣時間）<input name="start" type="date"></label><label>結束日期（含當天）<input name="end" type="date"></label><p><button id="saveStore" disabled>儲存接單與活動設定</button></p><output id="storeSaved" aria-live="polite"></output></form></section></div></main>
+<dialog id="orderEditor"><form id="editOrder"><h2>編輯訂單</h2><div id="editFields"></div><output id="editError" aria-live="polite"></output><div class="actions"><button type="submit">儲存</button><button type="button" id="closeEditor">取消</button></div></form></dialog><script src="../config.js"></script><script src="../remote.js"></script><script>
 const get=id=>document.getElementById(id);
 let orders=[], members=[];
 function showError(error){get('notice').hidden=false;get('notice').textContent=error.message;}
@@ -76,8 +76,7 @@ const adminReady=connection.then(async ({auth})=>{
  get('loginGate').hidden=true;get('adminConsole').hidden=false;get('logoutAdmin').hidden=false;
  return true;
 }).catch(error=>{get('loginError').textContent=error.message;return false;});
-const view=location.hash.slice(1)||'orders';
-window.addEventListener('hashchange',()=>location.reload());
+let view,orderGroup="all";
 const sections={
  orders:['訂單頁面','新訂單會先顯示「待確認」。請先確認訂單，再依取貨方式標記出貨或取貨。'],
  search:['查詢訂單','依姓名、電話、單號或狀態查詢歷史訂單。'],
@@ -85,12 +84,26 @@ const sections={
  revenue:['收入統計','以訂單合計統計，包含宅配運費。'],
  products:['商品設定','修改客戶頁販售的商品名稱與單價。新售價適用於之後送出的訂單。']
 };
-const [heading,description]=view==='sessions'?['登入裝置','顯示最近三分鐘內仍有活動的管理工作階段。']:sections[view]||sections.orders;
-get('heading').textContent=heading;
-get('description').textContent=description;
-document.querySelector('.rail nav a[href="#'+view+'"]')?.setAttribute('aria-current','page');
-get('criteria').hidden=view!=='search';
-for(const stage of stages)get('filter').add(new Option(stage,stage));
+let editing;
+function openEditor(order){
+ editing=order;
+ get('editFields').replaceChildren();get('editError').textContent='';
+ for(const [key,label,numeric] of [['buyer','訂購人'],['phone','電話'],['productName','品項'],['qty','數量',true],['unitPrice','單價',true],...(order.delivery==='ship'?[['freight','運費',true],['receiver','收件人'],['address','收件地址']]:[]),['gift','贈品'],['note','備註']]){
+  const row=document.createElement('label'),input=document.createElement('input');
+  input.name=key;input.value=order[key]??(numeric?0:'');
+  if(numeric){input.type='number';input.min=key==='qty'?1:0;input.required=true;}
+  row.append(label,input);get('editFields').append(row);
+ }
+ get('orderEditor').showModal();
+}
+get('closeEditor').onclick=()=>get('orderEditor').close();
+get('editOrder').onsubmit=async event=>{
+ event.preventDefault();
+ const button=event.submitter;button.disabled=true;
+ try{await api('admin/edit',{freight:0,...Object.fromEntries(new FormData(event.currentTarget)),id:editing.id,updatedAt:editing.updatedAt||''});get('orderEditor').close();await reload();}
+ catch(error){get('editError').textContent=error.message;}
+ finally{button.disabled=false;}
+};
 function filtered(orders){
  const keyword=get('search').value.trim().toUpperCase(),status=get('filter').value;
  return orders.filter(o=>(!status||o.status===status)&&[o.buyer,o.phone,o.id].some(value=>value.toUpperCase().includes(keyword)));
@@ -122,14 +135,26 @@ function render(){
   return;
  }
  get('orders').replaceChildren();
- const list=view==='search'?filtered(orders):[...orders].sort((a,b)=>Number(['待確認','已確認'].includes(b.status))-Number(['待確認','已確認'].includes(a.status)));
+ const groups=[['all','全部',()=>true],['pending','待確認',o=>o.status==='待確認'],['ship','待出貨',o=>o.status==='已確認'&&o.delivery==='ship'],['pickup','待取貨',o=>o.status==='已確認'&&o.delivery==='pickup'],['shipped','已出貨',o=>o.status==='已出貨'],['picked','已取貨',o=>o.status==='已取貨']];
+ const groupBar=get('orderGroups');
+ if(view==='orders'){
+  groupBar.replaceChildren();
+  for(const [key,label,match] of groups){
+   const button=document.createElement('button');button.textContent=label+' '+orders.filter(match).length;
+   button.setAttribute('aria-pressed',String(key===orderGroup));button.onclick=()=>{orderGroup=key;render();};groupBar.append(button);
+  }
+ }
+ const list=view==='search'?filtered(orders):orders.filter(groups.find(group=>group[0]===orderGroup)[2]);
  for(const o of list){
   const box=document.createElement('article'),detail=document.createElement('p'),actions=document.createElement('div');
   box.className='order';actions.className='actions';
   const top=document.createElement('div'),title=document.createElement('strong'),badge=document.createElement('span');
   top.className='orderTop';badge.className='pill';badge.dataset.status=o.status;
-  title.textContent=o.buyer+' · '+o.id;badge.textContent=o.status;top.append(title,badge);
-  detail.textContent=[o.phone,(o.productName||'蔥酥小餅')+' × '+o.qty,money(o.total??o.subtotal),o.paid?'已收款':'未收款',shippingNote(o),o.receiver,o.address,o.note,o.gift?'贈 '+o.gift:''].filter(Boolean).join('｜');
+  title.textContent=(o.productName||'蔥酥小餅')+' × '+o.qty+' 張';badge.textContent=o.status==='已確認'?(o.delivery==='ship'?'待出貨':'待取貨'):o.status;top.append(title,badge);
+  const amount=document.createElement('strong'),meta=document.createElement('small');
+  amount.className='orderAmount';amount.textContent=money(o.total??o.subtotal);
+  detail.textContent=[o.buyer,o.phone,o.delivery==='ship'?'宅配':'自取',o.paid?'已收款':'未收款',o.receiver,o.address,o.note,o.gift?'贈 '+o.gift:''].filter(Boolean).join('｜');
+  meta.textContent='訂單編號 '+o.id;
   function action(label,change){
    const button=document.createElement('button');
    button.textContent=label;
@@ -147,7 +172,12 @@ function render(){
    if(o.status==='已確認')action(o.delivery==='ship'?'標記已出貨':'標記已取貨',{status:o.delivery==='ship'?'已出貨':'已取貨'});
   }
   if(o.status!=='已取消')action(o.paid?'取消收款標記':'標記已收款',{paid:!o.paid});
-  box.append(top,detail,actions);get('orders').append(box);
+  function extra(label,handler){
+   const button=document.createElement('button');button.textContent=label;button.onclick=handler;actions.append(button);
+  }
+  if(!o.paid&&['待確認','已確認'].includes(o.status))extra('編輯訂單',()=>openEditor(o));
+  if(!o.paid)extra('刪除訂單',async()=>{if(!confirm('確定要從訂單與歷史紀錄移除此筆訂單？'))return;try{await api('admin/delete',{id:o.id});await reload();}catch(error){showError(error);}});
+  box.append(top,amount,detail,meta,actions);get('orders').append(box);
  }
  if(!get('orders').children.length)get('orders').textContent='目前沒有符合條件的訂單。';
 }
@@ -159,7 +189,7 @@ get('export').onclick=()=>{
  const url=URL.createObjectURL(new Blob(['\uFEFF',csv],{type:'text/csv;charset=utf-8'}));
  const a=document.createElement('a');a.href=url;a.download='scallion-orders.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 };
-adminReady.then(ready=>{if(!ready)return;
+adminReady.then(ready=>{if(!ready){get('loginGate').hidden=false;return;}
 async function checkSessions(){
  if(view!=='sessions'){await api('admin/session/ping');return;}
  const items=await api('admin/session/list');
@@ -175,9 +205,20 @@ async function checkSessions(){
 }
 setInterval(()=>checkSessions().catch(showError),20000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkSessions().catch(showError);});
-if(view==='sessions'){checkSessions().catch(showError);return;}
-
-if(view==='products'){
+function navigate(){
+ const next=location.hash.slice(1);
+ view=next==='sessions'||Object.hasOwn(sections,next)?next:'orders';
+ const [heading,description]=view==='sessions'?['登入裝置','顯示最近三分鐘內仍有活動的管理工作階段。']:sections[view];
+ get('heading').textContent=heading;get('description').textContent=description;
+ for(const link of document.querySelectorAll('.rail nav a'))link.setAttribute('aria-current',link.hash==='#'+view?'page':'false');
+ for(const [id,visible] of Object.entries({criteria:view==='search',orders:['orders','search'].includes(view),overview:view==='orders',orderGroups:view==='orders',stats:view==='revenue',members:view==='members',sessions:view==='sessions',productForm:view==='products',storeForm:view==='products',catalog:view==='products'}))get(id).hidden=!visible;
+ if(view==='sessions'){checkSessions().catch(showError);return;}
+ if(view!=='products'){reload().catch(showError);return;}
+ initProducts();
+}
+window.addEventListener('hashchange',navigate);
+navigate();
+function initProducts(){
  const form=get('productForm');
  form.hidden=false;
  const catalog=get('catalog'), preview=get('imagePreview');
@@ -236,6 +277,6 @@ if(view==='products'){
   fillStore(await api('admin/store',data));
   get('storeSaved').textContent='已儲存接單與活動設定。';
  });
-}else reload().catch(showError);});}
+}});}
 else quote();
 </script></html>
