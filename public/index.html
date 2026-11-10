@@ -53,7 +53,16 @@ async function refreshHistory(){
 }
 
 async function startLine(interactive){
- const connected=await connectLine(interactive);
+ let connected;
+ try{
+  connected=await connectLine(interactive);
+ }catch(error){
+  if(interactive||error.code!=='functions/unauthenticated'||
+     error.message!=='LINE 登入已失效，請重新開啟會員專區。')throw error;
+  const {member:signedInMember}=await api('history').catch(()=>({}));
+  if(!signedInMember)throw error;
+  connected=true;
+ }
  if(!connected)return;
  lineId='verified';
  get('lineStatus').textContent='LINE 已登入。';
