@@ -5,6 +5,7 @@ export function buildApi(db,env){
 const config=db.doc('store/config');
 const product=id=>db.collection('products').doc(id);
 const member=id=>db.collection('members').doc(id);
+const recipient=id=>db.collection('lineRecipients').doc(id);
 const order=id=>db.collection('orders').doc(id);
 const defaults={accepting:false,enabled:false,gift:'保冰袋 1 個',threshold:300,start:'',end:'',shippingFee:0,freeShipping:null};
 const text=(v,max)=>typeof v==='string'&&v.trim().length<=max?v.trim():'';
@@ -34,6 +35,36 @@ function orderSummary(o){
  return {id,qty,subtotal,freight,total,productName,unitPrice,delivery,gift,status,paid,date};
 }
 
+async function notifyConfirmation(o){
+ if(!o.memberUid)return '訪客訂單未發送 LINE 通知。';
+ if(!env.LINE_CHANNEL_ACCESS_TOKEN)return '尚未設定 LINE 權杖。';
+ try{
+  const userId=(await recipient(o.memberUid).get()).data()?.userId;
+  if(!/^U[0-9a-f]{32}$/.test(userId))return '客人尚未透過新版完成 LINE 驗證。';
+  const label=(text,size='sm')=>({type:'text',text,size,color:'#315849',wrap:true});
+  const card={type:'bubble',
+   header:{type:'box',layout:'vertical',backgroundColor:'#E8F3ED',contents:[label('蔥酥小餅'),{...label('訂單已確認','xl'),weight:'bold'}]},
+   body:{type:'box',layout:'vertical',backgroundColor:'#FFF9ED',spacing:'md',contents:[
+    label(o.productName+' × '+o.qty,'md'),label(o.delivery==='ship'?'冷凍宅配':'自取'),
+    {...label('NT$'+(o.total??o.subtotal).toLocaleString('zh-TW'),'xxl'),weight:'bold'},label(o.id,'xs')
+   ]},
+   footer:{type:'box',layout:'vertical',contents:[{type:'button',style:'primary',color:'#315849',action:{
+    type:'uri',label:'查看我的訂單',uri:'https://liff.line.me/2012513126-ADVRyiPl/#history'
+   }}]}
+  };
+  const response=await fetch('https://api.line.me/v2/bot/message/push',{
+   method:'POST',signal:AbortSignal.timeout(6000),
+   headers:{Authorization:'Bearer '+env.LINE_CHANNEL_ACCESS_TOKEN,'Content-Type':'application/json'},
+   body:JSON.stringify({to:userId,messages:[{type:'flex',altText:'蔥酥小餅｜訂單已確認',contents:card}]})
+  });
+  if(!response.ok)console.warn('LINE order push rejected',response.status);
+  return response.ok?'LINE 已接受發送請求。':'LINE 拒絕發送，請查看 Worker 紀錄。';
+ }catch{
+  console.warn('LINE order push could not be completed');
+  return '無法確認 LINE 發送結果。';
+ }
+}
+
 async function lineLogin(request){
  const idToken=text(request.data?.idToken,4096);
  if(!idToken)fail('請先登入 LINE。','unauthenticated');
@@ -43,7 +74,10 @@ async function lineLogin(request){
  if(!result.ok)fail('LINE 登入已失效，請重新開啟會員專區。','unauthenticated');
  const claims=await result.json();
  if(claims.aud!=='2012513126'||claims.iss!=='https://access.line.me'||!text(claims.sub,128)||!(claims.exp>Date.now()/1000))fail('無法驗證 LINE 身分。','unauthenticated');
- return {token:await customToken(env,'line_'+sha(claims.sub))};
+ const uid='line_'+sha(claims.sub);
+ const token=await customToken(env,uid);
+ if(/^U[0-9a-f]{32}$/.test(claims.sub))await recipient(uid).set({userId:claims.sub});
+ return {token};
 }
 
 async function storeApi(request){
@@ -118,7 +152,7 @@ async function storeApi(request){
  case 'admin/delete':
  case 'admin/update':{
   if(!/^SC-[A-F0-9]{24}$/.test(d.id))fail('訂單編號有誤。');
-  return db.runTransaction(async tx=>{
+  const update=await db.runTransaction(async tx=>{
    const ref=order(d.id),o=(await tx.get(ref)).data();
    if(!o||o.deletedAt)fail('查無訂單。','not-found');
    if(path==='admin/delete'){
@@ -143,9 +177,12 @@ async function storeApi(request){
     const next=o.status==='待確認'?['已確認','已取消']:o.status==='已確認'?[o.delivery==='ship'?'已出貨':'已取貨']:[];
     if(!next.includes(d.status))fail('請依目前訂單狀態操作。','failed-precondition');
     tx.update(ref,{status:d.status});
+    if(d.status==='已確認')return {confirmedOrder:o};
    }
    return {ok:true};
   });
+  if(update.confirmedOrder)return {ok:true,notification:await notifyConfirmation(update.confirmedOrder)};
+  return update;
  }
  case 'history':{
   if(!uid)return {member:null,orders:[]};
