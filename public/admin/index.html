@@ -161,7 +161,7 @@ function render(){
    button.onclick=async()=>{
     if(change.status==='已取消'&&!window.confirm('確定取消這筆訂單？'))return;
     for(const item of actions.children)item.disabled=true;
-    try{await api('admin/update',{id:o.id,...change});await reload();}
+    try{const result=await api('admin/update',{id:o.id,...change});if(result.notification)window.alert('訂單已確認。'+result.notification);await reload();}
     catch(error){showError(error);}
     finally{for(const item of actions.children)item.disabled=false;}
    };
