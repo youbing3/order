@@ -108,7 +108,8 @@ async function storeApi(request){
   await config.set(s);return s;
  }
  case 'admin/product':{
-  const id=d.id||randomUUID(),name=text(d.name,60),price=Number(d.price),image=text(d.image,350000);
+  const id=d.id||randomUUID(),name=text(d.name,60),price=Number(d.price),image=text(d.image,700000);
+  if(typeof d.image==='string'&&d.image.length>700000)fail('壓縮後的商品圖片仍太大，請縮小圖片再試。');
   if(!/^[a-f0-9-]{36}$/.test(id)||!name||!integer(price,1,100000)||(d.image&&!/^data:image\/(webp|png|jpeg);base64,[A-Za-z0-9+/]+={0,2}$/.test(image)))fail('請確認品名、價格及圖片大小。');
   const p={id,name,price,image,active:d.active==='on'};
   await product(id).set(p);return p;

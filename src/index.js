@@ -12,9 +12,10 @@ export default {
   if(!endpoint)return json({code:'not-found',message:'找不到功能。'},404);
   try{
    const raw=await request.text();
-   if(raw.length>370000)return json({code:'invalid-argument',message:'資料太大。'},413);
+   if(raw.length>720000)return json({code:'invalid-argument',message:'資料太大。'},413);
    let data;
    try{data=JSON.parse(raw);}catch{return json({code:'invalid-argument',message:'資料格式錯誤。'},400);}
+   if(raw.length>370000&&(endpoint!=='storeApi'||data?.path!=='admin/product'))return json({code:'invalid-argument',message:'資料太大。'},413);
    const header=request.headers.get('Authorization'),auth=await verifyAuth(header,env.FIREBASE_PROJECT);
    if(header&&!auth)return json({code:'unauthenticated',message:'請重新登入。'},401);
    const result=await buildApi(firestore(env),env)[endpoint]({data,auth});
