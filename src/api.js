@@ -36,6 +36,7 @@ function orderSummary(o){
 }
 
 async function notifyConfirmation(o){
+ if(Date.now()-Date.parse(o.lineNoticeStarted)>23*3600000)return '補發期限已過，請先確認客人是否收到。';
  if(!o.memberUid)return '訪客訂單未發送 LINE 通知。';
  if(!env.LINE_CHANNEL_ACCESS_TOKEN)return '尚未設定 LINE 權杖。';
  try{
@@ -54,11 +55,18 @@ async function notifyConfirmation(o){
   };
   const response=await fetch('https://api.line.me/v2/bot/message/push',{
    method:'POST',signal:AbortSignal.timeout(6000),
-   headers:{Authorization:'Bearer '+env.LINE_CHANNEL_ACCESS_TOKEN,'Content-Type':'application/json'},
+   headers:{Authorization:'Bearer '+env.LINE_CHANNEL_ACCESS_TOKEN,'Content-Type':'application/json','X-Line-Retry-Key':o.lineNoticeKey},
    body:JSON.stringify({to:userId,messages:[{type:'flex',altText:'蔥酥小餅｜訂單已確認',contents:card}]})
   });
+  if(response.ok||(response.status===409&&response.headers.has('x-line-accepted-request-id'))){
+   await db.runTransaction(async tx=>{
+    const ref=order(o.id);
+    if((await tx.get(ref)).exists)tx.update(ref,{lineNoticeAccepted:true});
+   });
+   return 'LINE 已接受發送請求。';
+  }
   if(!response.ok)console.warn('LINE order push rejected',response.status);
-  return response.ok?'LINE 已接受發送請求。':'LINE 拒絕發送，請查看 Worker 紀錄。';
+  return 'LINE 拒絕發送，請查看 Worker 紀錄。';
  }catch{
   console.warn('LINE order push could not be completed');
   return '無法確認 LINE 發送結果。';
@@ -148,6 +156,7 @@ async function storeApi(request){
   const p={id,name,price,image,active:d.active==='on'};
   await product(id).set(p);return p;
  }
+ case 'admin/notify':
  case 'admin/edit':
  case 'admin/delete':
  case 'admin/update':{
@@ -155,6 +164,13 @@ async function storeApi(request){
   const update=await db.runTransaction(async tx=>{
    const ref=order(d.id),o=(await tx.get(ref)).data();
    if(!o||o.deletedAt)fail('查無訂單。','not-found');
+   if(path==='admin/notify'){
+    if(!['已確認','已出貨','已取貨'].includes(o.status))fail('請先確認訂單。','failed-precondition');
+    if(o.lineNoticeAccepted)return {ok:true,notification:'LINE 已接受過這筆通知。'};
+    const notice=o.lineNoticeKey?{}:{lineNoticeKey:randomUUID(),lineNoticeStarted:date()};
+    if(!o.lineNoticeKey)tx.update(ref,notice);
+    return {confirmedOrder:{...o,...notice}};
+   }
    if(path==='admin/delete'){
     if(o.paid)fail('已收款的訂單請先確認退款，再取消收款標記。','failed-precondition');
     tx.update(ref,{deletedAt:date(),deletedBy:request.auth.uid});
@@ -176,8 +192,12 @@ async function storeApi(request){
    else{
     const next=o.status==='待確認'?['已確認','已取消']:o.status==='已確認'?[o.delivery==='ship'?'已出貨':'已取貨']:[];
     if(!next.includes(d.status))fail('請依目前訂單狀態操作。','failed-precondition');
+    if(d.status==='已確認'){
+     const notice={lineNoticeKey:randomUUID(),lineNoticeStarted:date()};
+     tx.update(ref,{status:d.status,...notice});
+     return {confirmedOrder:{...o,...notice}};
+    }
     tx.update(ref,{status:d.status});
-    if(d.status==='已確認')return {confirmedOrder:o};
    }
    return {ok:true};
   });
@@ -186,11 +206,12 @@ async function storeApi(request){
  }
  case 'history':{
   if(!uid)return {member:null,orders:[]};
-  const m=(await member(uid).get()).data();
+  const [profile,line]=await Promise.all([member(uid).get(),recipient(uid).get()]);
+  const m=profile.data();
   if(!m)return {member:null,orders:[]};
   const o=rows(await db.collection('orders').where('memberUid','==',uid).get());
   o.sort((a,b)=>b.date.localeCompare(a.date));
-  return {member:{name:m.name,phone:m.phone},orders:o.filter(order=>!order.deletedAt).map(orderSummary)};
+  return {member:{name:m.name,phone:m.phone},lineNotifications:line.exists,orders:o.filter(order=>!order.deletedAt).map(orderSummary)};
  }
  case 'member':{
   if(!uid)fail('請先用 LINE 登入。','unauthenticated');
